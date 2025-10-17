@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PromptData — Gerador de Prompts (client-side)</title>
+    <style>
+      body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:0;padding:24px;background:#f7f8fb;color:#111}
+      .container{max-width:900px;margin:0 auto}
+      textarea{width:100%;min-height:120px;padding:12px;font-size:15px}
+      select,input,button{font-size:15px;padding:8px;margin-right:8px}
+      .row{display:flex;gap:8px;align-items:center;margin:8px 0}
+      pre{background:#fff;border:1px solid #e6e9ef;padding:12px;overflow:auto}
+      .meta{color:#666;font-size:13px;margin-bottom:8px}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>PromptData — Gerador de Prompts (client-side)</h1>
+      <p class="meta">Este site roda inteiramente no navegador usando um gerador mock. Use para gerar prompts estruturados e exportar JSON. Integração com Gemini não é suportada aqui — isso deve ser feito via servidor seguro.</p>
+
+      <label>Ideia base</label>
+      <textarea id="idea" placeholder="Ex: mulher correndo na praia ao pôr do sol com seu cachorro, praia deserta"></textarea>
+
+      <div class="row">
+        <label for="target">Plataforma</label>
+        <select id="target">
+          <option value="veo-3">VEO-3</option>
+          <option value="sora2">Sora2</option>
+        </select>
+        <label for="steps">Beats (steps)</label>
+        <input id="steps" type="number" value="3" min="1" max="6" style="width:80px" />
+        <button id="generate">Gerar</button>
+        <button id="export">Exportar JSON</button>
+      </div>
+
+      <div class="row">
+        <label for="workerUrl">Worker proxy URL (opcional)</label>
+        <input id="workerUrl" placeholder="https://your-worker.example.workers.dev" style="flex:1" />
+      </div>
+
+      <h3>Prompt estruturado (JSON)</h3>
+      <pre id="output">Nenhum resultado ainda.</pre>
+
+      <h3>Prompt para plataforma selecionada</h3>
+      <pre id="platform">—</pre>
+    </div>
+
+    <script src="/js/generator-browser.js"></script>
+    <script>
+      const ideaEl = document.getElementById('idea')
+      const targetEl = document.getElementById('target')
+      const stepsEl = document.getElementById('steps')
+      const outEl = document.getElementById('output')
+      const platformEl = document.getElementById('platform')
+      const genBtn = document.getElementById('generate')
+      const expBtn = document.getElementById('export')
+
+      genBtn.addEventListener('click',async ()=>{
+        const idea = ideaEl.value.trim()
+        if(!idea){alert('Digite a ideia base');return}
+        const target = targetEl.value
+        const steps = Number(stepsEl.value)||3
+        const workerUrl = document.getElementById('workerUrl').value.trim()
+
+        if(workerUrl){
+          // call worker proxy which should forward to Gemini
+          outEl.textContent = 'Aguardando resposta do worker...'
+          try{
+            const body = {contents:[{parts:[{text: `Gere em português um prompt estruturado para ${target}: ${idea}. Retorne apenas JSON com chaves: title, beats, camera, lighting, environment, emotional_tone, final_prompt. Beats deve ser lista com objetos com chaves id, description, shot_instructions.`}]}]}
+            const aiResp = await PromptDataBrowser.callWorker(workerUrl, body)
+            // if the AI returned code block, try to extract JSON
+            let parsed = aiResp
+            if(typeof aiResp === 'object' && aiResp.candidates && aiResp.candidates[0] && aiResp.candidates[0].content && aiResp.candidates[0].content.parts){
+              const text = aiResp.candidates[0].content.parts.map(p=>p.text).join('\n')
+              // extract JSON from text
+              const m = text.match(/\{[\s\S]*\}/)
+              if(m) parsed = JSON.parse(m[0])
+              else parsed = {raw: text}
+            }
+            outEl.textContent = JSON.stringify(parsed,null,2)
+            const platform = typeof parsed === 'object' && !parsed.raw ? PromptDataBrowser.toPlatform(parsed,target) : (parsed.raw||JSON.stringify(parsed))
+            platformEl.textContent = platform
+          }catch(e){
+            outEl.textContent = 'Erro: '+e.message
+          }
+        }else{
+          const result = PromptDataBrowser.generateStructured(idea,{target,steps})
+          outEl.textContent = JSON.stringify(result, null, 2)
+          const platform = PromptDataBrowser.toPlatform(result, target)
+          platformEl.textContent = platform
+        }
+      })
+
+      expBtn.addEventListener('click',()=>{
+        if(outEl.textContent.includes('Nenhum')){alert('Gere primeiro o prompt.');return}
+        const blob = new Blob([outEl.textContent],{type:'application/json'})
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'prompt.json'
+        a.click()
+        URL.revokeObjectURL(url)
+      })
+    </script>
+  </body>
+</html>

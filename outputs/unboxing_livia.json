@@ -1,0 +1,72 @@
+{
+  "title": "Live TikTok Shop: Lívia apresenta creme corporal",
+  "language": "pt-BR",
+  "approx_total_duration_s": 40,
+  "tags": ["unboxing", "skincare", "promo", "tiktok-live", "shopping"],
+  "imageReference": "image://uploads/product_front.jpg",
+  "characters": [
+    {
+      "id": "char-001",
+      "name": "Lívia",
+      "age": "25 anos",
+      "appearance": "Cabelos loiros, traços delicados, pele natural, sorriso acolhedor",
+      "demeanor": "Fala devagar, pausada e clara; tom caloroso; confiante e simpática",
+      "role": "Apresentadora / influenciadora de produto",
+      "notes": "Carisma natural; transmite confiança sem exageros; linguagem acessível"
+    }
+  ],
+  "scenes": [
+    {
+      "step": 1,
+      "title": "Abertura / Boas-vindas",
+      "duration_s": 10,
+      "visual_description": "Plano médio vertical (do peito para cima). Fundo da loja com prateleiras desfocado.",
+      "main_action": "Lívia saúda o público, segura a embalagem do creme e explica brevemente o que vai mostrar.",
+      "dialogue_suggestion": "Olá, pessoal! Hoje estou aqui no nosso quiosque para mostrar esse creme corporal que deixa a pele macia — vou testar com vocês ao vivo.",
+      "camera": { "angle": "plano médio vertical", "movement": "leve dolly-in", "lens": "35mm" },
+      "lighting": { "type": "key light suave + fill", "color_temp_k": 5600, "intensity": "suave" },
+      "audio_cue": "música de fundo leve (fade baixo), som ambiente do shopping reduzido",
+      "shot_instructions": "Manter foco no rosto de Lívia; abrir com a embalagem virada para câmera; inserir legenda com nome do produto"
+    },
+    {
+      "step": 2,
+      "title": "Demonstração da textura",
+      "duration_s": 18,
+      "visual_description": "Close-up da mão e do pote; textura do creme sendo retirada com espátula e aplicada no dorso da mão.",
+      "main_action": "Mostrar consistência, espalhar e comentar sensação imediata.",
+      "dialogue_suggestion": "Olhem só a textura — é cremosa, espalha fácil e não deixa aspecto pegajoso. Sinto a pele mais macia ao toque.",
+      "camera": { "angle": "close-up nas mãos -> cut para close-up facial", "movement": "push-in para a textura, em seguida corte para reação", "lens": "50mm" },
+      "lighting": { "type": "softbox difusa para close", "color_temp_k": 5600 },
+      "audio_cue": "pequeno efeito sonoro suave quando o creme é mostrado",
+      "shot_instructions": "Usar espátula limpa; foco macro na textura; manter continuidade de cor entre close das mãos e do rosto"
+    },
+    {
+      "step": 3,
+      "title": "Call to action (oferta)",
+      "duration_s": 12,
+      "visual_description": "Plano médio novamente; embalagem em destaque; sorriso e contato visual com a câmera.",
+      "main_action": "Lívia informa promo, código e incentiva compra rápida (urgência leve).",
+      "dialogue_suggestion": "Se vocês quiserem testar, o cupom LIPROMO garante 15% por tempo limitado — corre que está com estoque no quiosque! Link na descrição.",
+      "camera": { "angle": "plano médio -> slight close-up no final", "movement": "slow push", "lens": "35mm" },
+      "lighting": { "type": "key + backlight suave para separar do fundo" },
+      "audio_cue": "sinal sonoro curto ao mostrar código; fade out da música",
+      "shot_instructions": "Fechar com branding visível e sorriso caloroso"
+    }
+  ],
+  "platformHints": {
+    "veo-3": {
+      "prompt": "[VEO-3]\nTITLE=Live: Lívia apresenta creme corporal;LANG=pt-BR;DURATION=40;IMAGE=image://uploads/product_front.jpg\n[SCENE|1|10s] Abertura / Boas-vindas :: Plano médio vertical; fundo do shopping desfocado :: Lívia segura a embalagem, cumprimenta e introduz o produto :: Música leve de fundo (fade baixo)\n[SCENE|2|18s] Demonstração da textura :: Close-up nas mãos, textura sendo retirada e aplicada no dorso da mão :: Mostrar consistência, espalhar e comentar sensação :: Efeito sonoro suave na apresentação\n[SCENE|3|12s] CTA e encerramento :: Plano médio com embalagem em destaque :: Informar cupom e incentivar compra rápida; fechar com sorriso e branding :: Sinal sonoro curto no código\n#SAFETY: Personagem é adulta (25 anos); sem conteúdo sexualizado; evitar alegações médicas não verificadas.",
+      "fields": { "platform": "veo-3", "fps": 30 }
+    },
+    "sora2": {
+      "prompt": "[SORA2]\nTitle: Live TikTok Shop — Lívia apresenta creme corporal\nLanguage: pt-BR\nDuration: 40s\nTags: unboxing, skincare, tiktok-live, shopping\nScene 1:\n  - Visual: plano médio vertical; loja ao fundo desfocado\n  - Action: saudação, apresentar embalagem\n  - Camera: 35mm, leve dolly-in\nScene 2:\n  - Visual: close-up nas mãos, textura\n  - Action: demonstrar aplicação no dorso da mão\n  - Camera: 50mm, push-in\n  - Lighting: softbox difusa\nScene 3:\n  - Visual: plano médio, embalagem em destaque\n  - Action: falar cupom e CTA\n  - Audio: sinal breve no código\nSafety: personagem adulta; não sexualizar; não alegar propriedades médicas.",
+      "fields": { "platform": "sora2", "language": "pt-BR" }
+    }
+  },
+  "variants": [
+    { "name": "profissional", "notes": "Tom técnico, foco em ingredientes sem alegações" },
+    { "name": "descontraido", "notes": "Tom coloquial, interação com público, espontâneo" },
+    { "name": "tutorial_extendido", "notes": "Inclui antes/depois sensoriais sem alegações clínicas" }
+  ],
+  "safetyNotes": "Confirmar que a personagem é maior de idade; evitar linguagem sexualizada; não fazer alegações médicas; obter consentimento para uso de imagem do local quando necessário."
+}

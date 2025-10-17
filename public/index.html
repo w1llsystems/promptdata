@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prompt Structurer</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial;margin:20px}
+    textarea{width:100%;height:120px}
+    .row{display:flex;gap:16px}
+    .col{flex:1}
+    pre{background:#f6f6f6;padding:12px;border-radius:6px}
+    label{font-weight:600}
+  </style>
+</head>
+<body>
+  <h1>Prompt Structurer para sora2 & veo-3</h1>
+  <div>
+    <label>Base idea:</label>
+    <textarea id="idea" placeholder="Escreva a ideia do prompt aqui..."></textarea>
+  </div>
+  <div style="margin-top:8px">
+    <label>Prompt melhorado (pré-visualização):</label>
+    <textarea id="improved" placeholder="Aqui aparecerá o prompt melhorado..." readonly></textarea>
+  </div>
+  <div class="row" style="margin-top:12px">
+    <div class="col">
+      <label>Target platform</label>
+      <select id="target">
+        <option value="sora2">sora2</option>
+        <option value="veo-3">veo-3</option>
+      </select>
+    </div>
+    <div class="col">
+      <label>Variants</label>
+      <input id="variants" type="number" value="2" min="1" max="10" style="width:120px" />
+    </div>
+    <div class="col">
+      <label>Steps (sequência)</label>
+      <input id="steps" type="number" value="3" min="1" max="20" style="width:120px" />
+    </div>
+    <div class="col">
+      <label style="display:block">Usar Gemini</label>
+      <input id="useAI" type="checkbox" /> <small>Enviar para Gemini se chave configurada</small>
+      <div style="margin-top:6px">
+        <label>Chave Gemini (opcional)</label>
+        <input id="geminiKey" placeholder="(opcional)" style="width:100%" />
+      </div>
+    </div>
+    <div class="col" style="display:flex;align-items:flex-end">
+      <div style="display:flex;gap:8px">
+        <button id="generate">Gerar simples</button>
+        <button id="generateDetailed">Gerar detalhado</button>
+        <button id="generateSeq">Gerar sequência</button>
+        <button id="exportJson">Exportar JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <h3>Prompt revisado</h3>
+  <pre id="revised">(waiting)</pre>
+
+  <h3>Resultado estruturado (JSON)</h3>
+  <pre id="structured">(waiting)</pre>
+
+  <h3>Sequência / Variantes</h3>
+  <pre id="variantsOut">(waiting)</pre>
+
+  <input type="hidden" id="lastStructuredJson" />
+
+  <script>
+    const setLoading = () => {
+      document.getElementById('revised').textContent = 'Gerando...';
+      document.getElementById('structured').textContent = '';
+      document.getElementById('variantsOut').textContent = '';
+      document.getElementById('improved').value = '';
+    };
+
+    document.getElementById('generate').addEventListener('click', async () => {
+      const idea = document.getElementById('idea').value.trim();
+      const target = document.getElementById('target').value;
+      const variants = parseInt(document.getElementById('variants').value, 10) || 1;
+      if (!idea) { alert('Informe a ideia do prompt'); return; }
+      setLoading();
+      const r = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea, target, variants })
+      });
+      const data = await r.json();
+      document.getElementById('revised').textContent = data.revised || JSON.stringify(data.raw || data, null, 2);
+      document.getElementById('structured').textContent = JSON.stringify(data.structured, null, 2);
+      document.getElementById('variantsOut').textContent = JSON.stringify(data.variants, null, 2);
+      document.getElementById('improved').value = data.revised || '';
+      document.getElementById('lastStructuredJson').value = JSON.stringify(data.structured || {});
+    });
+
+    document.getElementById('generateDetailed').addEventListener('click', async () => {
+      const idea = document.getElementById('idea').value.trim();
+      const target = document.getElementById('target').value;
+      const steps = parseInt(document.getElementById('steps').value, 10) || 3;
+      if (!idea) { alert('Informe a ideia do prompt'); return; }
+      setLoading();
+      const useAI = document.getElementById('useAI').checked;
+      const geminiKey = document.getElementById('geminiKey').value.trim();
+      const r = await fetch('/api/improve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea, target, steps, useAI, detailed: true, geminiKey })
+      });
+      const data = await r.json();
+      document.getElementById('revised').textContent = data.revised || '';
+      document.getElementById('structured').textContent = JSON.stringify(data.structured, null, 2);
+      document.getElementById('variantsOut').textContent = JSON.stringify(data.platformPrompt, null, 2);
+      if (data.ai) document.getElementById('variantsOut').textContent += '\n\nAI_RESPONSE:\n' + JSON.stringify(data.ai, null, 2);
+      document.getElementById('improved').value = data.revised || '';
+      document.getElementById('lastStructuredJson').value = JSON.stringify(data.structured || {});
+    });
+
+    document.getElementById('generateSeq').addEventListener('click', async () => {
+      const idea = document.getElementById('idea').value.trim();
+      const steps = parseInt(document.getElementById('steps').value, 10) || 3;
+      if (!idea) { alert('Informe a ideia do prompt'); return; }
+      setLoading();
+      const r = await fetch('/api/sequential', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea, steps })
+      });
+      const data = await r.json();
+      document.getElementById('revised').textContent = `Sequência gerada: ${data.steps} passos`;
+      document.getElementById('structured').textContent = JSON.stringify(data.sequence, null, 2);
+      document.getElementById('variantsOut').textContent = '';
+      document.getElementById('lastStructuredJson').value = JSON.stringify({ sequence: data.sequence } || {});
+    });
+
+    document.getElementById('exportJson').addEventListener('click', () => {
+      const json = document.getElementById('lastStructuredJson').value;
+      if (!json) { alert('Gere um prompt primeiro'); return; }
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'prompt.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
