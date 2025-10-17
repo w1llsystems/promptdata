@@ -1,4 +1,4 @@
-name = "promptdata-gemini-proxy"
+name = "promptdata"
 main = "./workers/worker.js"
 compatibility_date = "2025-10-17"
 
