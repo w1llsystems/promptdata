@@ -1,0 +1,50 @@
+name: Deploy Cloudflare Worker (publish + set secret)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install wrangler
+        run: npm i -g wrangler
+
+      - name: Create wrangler.toml
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          cat > wrangler.toml <<'EOF'
+          name = "promptdata-gemini-proxy"
+          main = "./workers/worker.js"
+          compatibility_date = "2025-10-17"
+          account_id = "${CF_ACCOUNT_ID}"
+          EOF
+
+      - name: Configure Cloudflare token for wrangler
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          # Wranger will automatically use CF_API_TOKEN from env
+          wrangler whoami || true
+
+      - name: Put GEMINI_API_KEY secret into worker
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          printf "%s" "$GEMINI_API_KEY" | wrangler secret put GEMINI_API_KEY --no-tty || true
+
+      - name: Publish Worker
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: |
+          wrangler publish || true
