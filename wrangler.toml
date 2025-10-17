@@ -1,0 +1,6 @@
+name = "promptdata-gemini-proxy"
+main = "./workers/worker.js"
+compatibility_date = "2025-10-17"
+
+# Optional: you can add account_id here or configure via CI environment variable CF_ACCOUNT_ID
+# account_id = "your-account-id"
